@@ -18,10 +18,16 @@ alter table public.bills enable row level security;
 
 -- 应用放在 Streamlit 服务端，使用 anon key 访问。
 -- 不要把 service_role key 写进 secrets。
--- 单独维护这条约束，方便以后只改允许的使用者
+-- 先去掉旧限制，再改人名，最后加上新限制。
+-- 顺序反过来时，旧约束会拒绝「老猪」。
 alter table public.bills drop constraint if exists bills_owner_check;
+
+update public.bills
+set owner = '老猪'
+where owner not in ('老猪', '美女');
+
 alter table public.bills add constraint bills_owner_check
-    check (owner in ('伴侣', '我自己'));
+    check (owner in ('老猪', '美女'));
 
 grant select, insert, delete on public.bills to anon, authenticated;
 

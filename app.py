@@ -7,7 +7,7 @@ from typing import Final
 
 import pandas as pd
 import plotly.express as px
-import streamlit as st
+import streamlit as st  # pyright: ignore[reportMissingImports]
 
 from utils import (
     ID_COLUMN,
@@ -32,7 +32,7 @@ CATEGORIES: Final[list[str]] = [
 ]
 
 # 家庭成员。云端表的 owner 约束要和这里保持一致
-OWNERS: Final[list[str]] = ["伴侣", "我自己"]
+OWNERS: Final[list[str]] = ["老猪", "美女"]
 SCOPE_ALL: Final[str] = "全家"
 
 
@@ -63,7 +63,7 @@ def render_sidebar() -> str:
     st.sidebar.header("家庭成员")
     # 选项改过之后，清掉会话里已经不存在的旧人选，避免下拉框报错
     if "current_owner" in st.session_state and st.session_state.current_owner not in OWNERS:
-        st.session_state.current_owner = "我自己"
+        st.session_state.current_owner = OWNERS[0]
     if "bill_scope" in st.session_state and st.session_state.bill_scope not in (SCOPE_ALL, *OWNERS):
         st.session_state.bill_scope = SCOPE_ALL
     st.sidebar.selectbox("当前使用者", OWNERS, key="current_owner")

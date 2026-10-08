@@ -19,7 +19,7 @@ BILL_COLUMNS: list[str] = ["日期", "类别", "金额", "备注", "使用者"]
 ID_COLUMN: str = "编号"
 OWNER_COLUMN: str = "使用者"
 STORAGE_COLUMNS: list[str] = [ID_COLUMN, *BILL_COLUMNS]
-DEFAULT_OWNER: str = "我自己"
+DEFAULT_OWNER: str = "老猪"
 
 # 云端表使用英文列，界面继续用中文列
 _DB_COLUMN_MAP: dict[str, str] = {
