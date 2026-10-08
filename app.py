@@ -9,6 +9,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st  # pyright: ignore[reportMissingImports]
 
+from voice import SpokenBill, listen_for_speech, parse_bill_speech
 from utils import (
     ID_COLUMN,
     BillStoreError,
@@ -102,6 +103,59 @@ def render_sidebar() -> str:
                 st.session_state.bill_saved = True
                 st.rerun()
     return str(scope)
+
+
+def render_voice_panel() -> None:
+    """手机主页面上的语音记账。说完后确认保存，不用手动填写。"""
+    st.subheader("语音记账")
+    st.caption("点按钮直接说。例如：老猪今天餐饮三十五块，午饭。")
+    if st.session_state.get("voice_saved"):
+        st.success("语音账单已保存。")
+        st.session_state.voice_saved = False
+
+    heard = listen_for_speech()
+    if heard is not None and heard["id"] != st.session_state.get("voice_result_id"):
+        st.session_state.voice_result_id = heard["id"]
+        st.session_state.voice_draft = parse_bill_speech(
+            heard["text"],
+            categories=list(CATEGORIES),
+            owners=list(OWNERS),
+        )
+
+    draft = st.session_state.get("voice_draft")
+    if not isinstance(draft, SpokenBill):
+        return
+
+    owner = draft.owner or str(st.session_state.get("current_owner", OWNERS[0]))
+    st.write(
+        f"听到：{draft.raw_text}",
+    )
+    if draft.amount is None or draft.amount <= 0:
+        st.warning("没有听清金额，请再说一次，例如：餐饮三十五块。")
+        return
+
+    note = draft.note or "无"
+    st.info(
+        f"{draft.bill_date.isoformat()} · {owner} · {draft.category} · "
+        f"¥{draft.amount:,.2f} · {note}"
+    )
+    if not st.button("保存这条语音账单", type="primary", width="stretch"):
+        return
+
+    try:
+        add_bill(
+            bill_date=draft.bill_date.isoformat(),
+            category=draft.category,
+            amount=float(draft.amount),
+            note=draft.note,
+            owner=owner,
+        )
+    except BillStoreError as exc:
+        st.error(str(exc))
+        return
+    st.session_state.voice_draft = None
+    st.session_state.voice_saved = True
+    st.rerun()
 
 
 def filter_bills(bills: pd.DataFrame, scope: str) -> pd.DataFrame:
@@ -294,6 +348,7 @@ def main() -> None:
 
     st.title("家庭记账")
     st.caption(storage_caption())
+    render_voice_panel()
 
     try:
         bills = filter_bills(load_bills(), scope)
