@@ -108,11 +108,25 @@ def render_sidebar() -> str:
 def render_voice_panel() -> None:
     """手机主页面上的语音记账。说完后确认保存，不用手动填写。"""
     st.subheader("语音记账")
-    st.caption("点按钮直接说。例如：老猪今天餐饮三十五块，午饭。")
+    st.caption("先点输入框，再点键盘上的麦克风说话。例如：老猪今天餐饮三十五块，午饭。")
     if st.session_state.get("voice_saved"):
         st.success("语音账单已保存。")
         st.session_state.voice_saved = False
 
+    # 苹果手机和国内网络打不开网页语音，键盘麦克风用的是手机自己的识别
+    st.text_input("键盘麦克风", placeholder="点这里，再点键盘上的麦克风", key="voice_typed")
+    if st.button("识别这句话", width="stretch"):
+        typed = str(st.session_state.get("voice_typed", "")).strip()
+        if not typed:
+            st.warning("还没有文字。请先点输入框，再用键盘上的麦克风说话。")
+        else:
+            st.session_state.voice_draft = parse_bill_speech(
+                typed,
+                categories=list(CATEGORIES),
+                owners=list(OWNERS),
+            )
+
+    st.caption("安卓 Chrome 也可以直接点下面的黑按钮。苹果手机会一点就失败，请用上面的输入框。")
     heard = listen_for_speech()
     if heard is not None and heard["id"] != st.session_state.get("voice_result_id"):
         st.session_state.voice_result_id = heard["id"]

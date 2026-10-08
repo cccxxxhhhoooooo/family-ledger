@@ -242,13 +242,19 @@ def _get_speech_component() -> Any:
                 recognition.onerror = (event) => {
                     listening = false;
                     button.textContent = "点我说话";
-                    if (event.error === "not-allowed") {
-                        status.textContent = "请允许使用麦克风后再试。";
-                    } else if (event.error === "no-speech") {
-                        status.textContent = "没有听到声音，请再说一次。";
-                    } else {
-                        status.textContent = "没有听清，请再说一次。";
+                    // aborted 多半是页面刷新打断，不算没听清
+                    if (event.error === "aborted") {
+                        return;
                     }
+                    const hints = {
+                        "not-allowed": "请允许麦克风后再点一次。",
+                        "service-not-allowed": "这个浏览器不能用网页语音，还没开始听。请用下面的输入框，点键盘上的麦克风。",
+                        "network": "语音服务连不上，还没开始听。请用下面的输入框，点键盘上的麦克风。",
+                        "audio-capture": "找不到麦克风。请用下面的输入框，点键盘上的麦克风。",
+                        "no-speech": "没有听到声音，请再说一次。"
+                    };
+                    status.textContent = hints[event.error]
+                        || "网页语音没启动，还没开始听。请用下面的输入框，点键盘上的麦克风。";
                 };
 
                 recognition.onend = () => {
