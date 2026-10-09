@@ -33,7 +33,7 @@ CATEGORIES: Final[list[str]] = [
 ]
 
 # 家庭成员。云端表的 owner 约束要和这里保持一致
-OWNERS: Final[list[str]] = ["老猪", "美女"]
+OWNERS: Final[list[str]] = ["老公", "美女"]
 SCOPE_ALL: Final[str] = "全家"
 
 
@@ -108,7 +108,7 @@ def render_sidebar() -> str:
 def render_voice_panel() -> None:
     """手机主页面上的语音记账。说完后确认保存，不用手动填写。"""
     st.subheader("语音记账")
-    st.caption("先点输入框，再点键盘上的麦克风说话。例如：老猪今天餐饮三十五块，午饭。")
+    st.caption("先点输入框，再点键盘上的麦克风说话。例如：老公今天餐饮三十五块，午饭。")
     if st.session_state.get("voice_saved"):
         st.success("语音账单已保存。")
         st.session_state.voice_saved = False
@@ -151,7 +151,7 @@ def render_voice_panel() -> None:
     note = draft.note or "无"
     st.info(
         f"{draft.bill_date.isoformat()} · {owner} · {draft.category} · "
-        f"¥{draft.amount:,.2f} · {note}"
+        f"{draft.amount:,.2f}元 · {note}"
     )
     if not st.button("保存这条语音账单", type="primary", width="stretch"):
         return
@@ -214,10 +214,10 @@ def render_metric_cards(bills: pd.DataFrame) -> None:
     month_total = calc_month_total(bills, date.today())
 
     cards = [
-        ("总消费", f"¥{total:,.2f}"),
+        ("总消费", f"{total:,.2f}元"),
         ("账单笔数", f"{count}"),
         ("消费类别", f"{category_count}"),
-        ("本月消费", f"¥{month_total:,.2f}"),
+        ("本月消费", f"{month_total:,.2f}元"),
     ]
     columns = st.columns(4)
     for column, (label, value) in zip(columns, cards):
@@ -279,7 +279,7 @@ def bill_option_labels(bills: pd.DataFrame) -> dict[str, str]:
     for _, row in bills.iterrows():
         note = str(row["备注"]).strip()
         text = (
-            f"{row['日期']} · {row['使用者']} · {row['类别']} · ¥{float(row['金额']):,.2f}"
+            f"{row['日期']} · {row['使用者']} · {row['类别']} · {float(row['金额']):,.2f}元"
         )
         if note:
             text = f"{text} · {note}"
@@ -313,7 +313,7 @@ def render_table(bills: pd.DataFrame) -> None:
         width="stretch",
         hide_index=True,
         column_config={
-            "金额": st.column_config.NumberColumn("金额", format="¥%.2f"),
+            "金额": st.column_config.NumberColumn("金额", format="%.2f"),
         },
     )
 
