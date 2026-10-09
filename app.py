@@ -35,6 +35,7 @@ CATEGORIES: Final[list[str]] = [
 # 家庭成员。云端表的 owner 约束要和这里保持一致
 OWNERS: Final[list[str]] = ["老公", "美女"]
 SCOPE_ALL: Final[str] = "全家"
+APP_PASSWORD: Final[str] = "525"
 
 
 def inject_styles() -> None:
@@ -57,6 +58,26 @@ def inject_styles() -> None:
         """,
         unsafe_allow_html=True,
     )
+
+
+def require_login() -> None:
+    """未输入正确密码时停在登录页，不加载账单。"""
+    if st.session_state.get("authenticated"):
+        return
+
+    st.title("家庭记账")
+    st.caption("请输入密码后进入。")
+    with st.form("login_form"):
+        password = st.text_input("密码", type="password")
+        submitted = st.form_submit_button("进入", width="stretch")
+
+    if submitted:
+        # 密码不对就留在登录页，不继续渲染账本
+        if str(password) == APP_PASSWORD:
+            st.session_state.authenticated = True
+            st.rerun()
+        st.error("密码不正确。")
+    st.stop()
 
 
 def render_sidebar() -> str:
@@ -358,6 +379,7 @@ def main() -> None:
     """组装侧边栏表单与主界面的统计、图表和列表。"""
     st.set_page_config(page_title="家庭记账", page_icon="📒", layout="wide")
     inject_styles()
+    require_login()
     scope = render_sidebar()
 
     st.title("家庭记账")
